@@ -707,10 +707,12 @@ header are in the CalendarViewHeader component.
 }
 
 .holiday-tooltip {
-	width: 100px;
+  width: 120px;
 	text-align: center;
-	padding: 5px;
-	background-color: #00cc00;
+  background-color: #333;
+  color: #fff;
+  border-radius: 6px;
+  padding: 5px 10px;
 	position: fixed;
 	transform: translate(-50%, 0%);
 	z-index: 10;
