@@ -5,6 +5,7 @@ class CalendarViewState {
 	currentDragItem?: INormalizedCalendarItem = undefined
 	dateSelectionOrigin?: Date = undefined
 	currentHoveredItemId: string = ""
+	currentHoveredHolidayId: string = ""
 	CalendarMath: object = CalendarMath
 }
 

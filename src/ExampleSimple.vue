@@ -1,35 +1,16 @@
 <template>
 	<div id="example-simple">
-		<CalendarView
-			:show-date="state.showDate"
-			:items="state.items"
-			:enable-date-selection="true"
-			:selection-start="state.selectionStart"
-			:selection-end="state.selectionEnd"
-			:starting-day-of-week="1"
-			:enable-drag-drop="true"
-			:item-top="themeOptions.top"
-			:item-content-height="themeOptions.height"
-			:item-border-height="themeOptions.border"
-			:class="`theme-${state.theme}`"
-			:current-period-label="themeOptions.currentPeriodLabel"
-			:show-times="true"
-			:display-week-numbers="true"
-			class="holiday-us-traditional holiday-us-official holiday-ue"
-			@date-selection-start="setSelection"
-			@date-selection="setSelection"
-			@date-selection-finish="finishSelection"
-			@drop-on-date="onDrop"
-		>
+		<CalendarView :show-date="state.showDate" :items="state.items" :holidays="state.holidays" :enable-date-selection="true"
+			:selection-start="state.selectionStart" :selection-end="state.selectionEnd" :starting-day-of-week="1"
+			:enable-drag-drop="true" :item-top="themeOptions.top" :item-content-height="themeOptions.height"
+			:item-border-height="themeOptions.border" :class="`theme-${state.theme}`"
+			:current-period-label="themeOptions.currentPeriodLabel" :show-times="true" :display-week-numbers="true"
+			class="holiday-us-traditional holiday-us-official holiday-ue" @date-selection-start="setSelection"
+			@date-selection="setSelection" @date-selection-finish="finishSelection" @drop-on-date="onDrop">
 			<template #header="{ headerProps }">
-				<CalendarViewHeader
-					:header-props
-					:previous-year-label="themeOptions.previousYearLabel"
-					:previous-period-label="themeOptions.previousPeriodLabel"
-					:next-period-label="themeOptions.nextPeriodLabel"
-					:next-year-label="themeOptions.nextYearLabel"
-					@input="setShowDate"
-				/>
+				<CalendarViewHeader :header-props :previous-year-label="themeOptions.previousYearLabel"
+					:previous-period-label="themeOptions.previousPeriodLabel" :next-period-label="themeOptions.nextPeriodLabel"
+					:next-year-label="themeOptions.nextYearLabel" @input="setShowDate" />
 			</template>
 		</CalendarView>
 	</div>
@@ -38,7 +19,7 @@
 import { computed, onMounted, reactive } from "vue"
 import CalendarView from "./CalendarView.vue"
 import CalendarViewHeader from "./CalendarViewHeader.vue"
-import { ICalendarItem, INormalizedCalendarItem } from "./ICalendarItem"
+import { ICalendarItem, INormalizedCalendarItem, ICalendarHoliday } from "./ICalendarItem"
 import CalendarMath from "./CalendarMath"
 
 class AppState {
@@ -47,32 +28,38 @@ class AppState {
 	selectionEnd?: Date = undefined
 	theme: string = "gcal"
 	items: ICalendarItem[] = []
+	holidays: ICalendarHoliday[] = [
+		{ id: "1", holidayDate: "2024-02-07", tooltip: "Is Holiday in EEUU, Brasil, Italy" },
+		{ id: "2", holidayDate: "2024-02-09", tooltip: "Is Holiday in France" },
+		{ id: "3", holidayDate: "2024-02-028", tooltip: "Is Holiday in Argentina" },
+	]
 }
 
 const state = reactive(new AppState())
 
+
 const themeOptions = computed((): any =>
 	state.theme == "gcal"
 		? {
-				top: "2.6em",
-				height: "2.1em",
-				border: "0px",
-				previousYearLabel: "\uE5CB\uE5CB",
-				previousPeriodLabel: "\uE5CB",
-				nextPeriodLabel: "\uE5CC",
-				nextYearLabel: "\uE5CC\uE5CC",
-				currentPeriodLabel: "Today",
-			}
+			top: "2.6em",
+			height: "2.1em",
+			border: "0px",
+			previousYearLabel: "\uE5CB\uE5CB",
+			previousPeriodLabel: "\uE5CB",
+			nextPeriodLabel: "\uE5CC",
+			nextYearLabel: "\uE5CC\uE5CC",
+			currentPeriodLabel: "Today",
+		}
 		: {
-				top: "1.4em",
-				height: "1.4em",
-				border: "2px",
-				previousYearLabel: "<<",
-				previousPeriodLabel: "<",
-				nextPeriodLabel: ">",
-				nextYearLabel: ">>",
-				currentPeriodLabel: "",
-			}
+			top: "1.4em",
+			height: "1.4em",
+			border: "2px",
+			previousYearLabel: "<<",
+			previousPeriodLabel: "<",
+			nextPeriodLabel: ">",
+			nextYearLabel: ">>",
+			currentPeriodLabel: "",
+		}
 )
 
 const setShowDate = (d: Date) => (state.showDate = d)

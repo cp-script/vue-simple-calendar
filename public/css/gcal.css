@@ -130,6 +130,12 @@ as of May 2020.
 	color: #fff;
 }
 
+.theme-gcal .cv-day.holiday .cv-day-number {
+	margin-top: 0.25rem;
+	background-color: green;
+	color: #fff;
+}
+
 .theme-gcal .cv-day[aria-selected="true"] {
 	background-color: #ffc;
 }

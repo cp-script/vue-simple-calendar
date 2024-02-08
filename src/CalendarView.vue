@@ -1,21 +1,18 @@
 <template>
-	<div
-		aria-label="Calendar"
-		:class="[
-			'cv-wrapper',
-			`locale-${CalendarMath.languageCode(displayLocale)}`,
-			`locale-${displayLocale}`,
-			`y${periodStart.getFullYear()}`,
-			`m${CalendarMath.paddedMonth(periodStart)}`,
-			`period-${displayPeriodUom}`,
-			`periodCount-${displayPeriodCount}`,
-			{
-				past: CalendarMath.isPastMonth(periodStart),
-				future: CalendarMath.isFutureMonth(periodStart),
-				noIntl: !CalendarMath.supportsIntl,
-			},
-		]"
-	>
+	<div aria-label="Calendar" :class="[
+		'cv-wrapper',
+		`locale-${CalendarMath.languageCode(displayLocale)}`,
+		`locale-${displayLocale}`,
+		`y${periodStart.getFullYear()}`,
+		`m${CalendarMath.paddedMonth(periodStart)}`,
+		`period-${displayPeriodUom}`,
+		`periodCount-${displayPeriodCount}`,
+		{
+			past: CalendarMath.isPastMonth(periodStart),
+			future: CalendarMath.isFutureMonth(periodStart),
+			noIntl: !CalendarMath.supportsIntl,
+		},
+	]">
 		<slot :headerProps="headerProps" name="header" />
 		<div class="cv-header-days">
 			<div v-if="displayWeekNumbers" class="cv-weeknumber" />
@@ -28,22 +25,17 @@
 			</template>
 		</div>
 		<div :aria-multiselectable="enableDateSelection" class="cv-weeks">
-			<div
-				v-for="(weekStart, weekIndex) in weeksOfPeriod"
-				:key="`${weekIndex}-week`"
-				:class="['cv-week', `week${weekIndex + 1}`, `ws${CalendarMath.isoYearMonthDay(weekStart)}`]"
-			>
+			<div v-for="(weekStart, weekIndex) in weeksOfPeriod" :key="`${weekIndex}-week`"
+				:class="['cv-week', `week${weekIndex + 1}`, `ws${CalendarMath.isoYearMonthDay(weekStart)}`]">
 				<div v-if="displayWeekNumbers" class="cv-weeknumber">
-					<slot name="week-number" :date="weekStart" :numberInYear="periodStartCalendarWeek + weekIndex" :numberInPeriod="weekIndex + 1">
+					<slot name="week-number" :date="weekStart" :numberInYear="periodStartCalendarWeek + weekIndex"
+						:numberInPeriod="weekIndex + 1">
 						<span>{{ periodStartCalendarWeek + weekIndex }}</span>
 					</slot>
 				</div>
 				<div class="cv-weekdays">
-					<div
-						v-for="(day, dayIndex) in CalendarMath.daysOfWeek(weekStart)"
-						:key="getColumnDOWClass(dayIndex)"
-						:draggable="enableDateSelection"
-						:class="[
+					<div v-for="(day, dayIndex) in CalendarMath.daysOfWeek(weekStart)" :key="getColumnDOWClass(dayIndex)"
+						:draggable="enableDateSelection" :class="[
 							'cv-day',
 							getColumnDOWClass(dayIndex),
 							`d${CalendarMath.isoYearMonthDay(day)}`,
@@ -62,57 +54,40 @@
 								selectionEnd: CalendarMath.isSameDate(day, selectionEnd),
 							},
 							...((dateClasses && dateClasses[CalendarMath.isoYearMonthDay(day)]) || []),
-						]"
-						:aria-grabbed="enableDateSelection ? dayIsSelected(day) : undefined"
-						:aria-label="day.getDate().toString()"
+						]" :aria-grabbed="enableDateSelection ? dayIsSelected(day) : undefined" :aria-label="day.getDate().toString()"
 						:aria-selected="dayIsSelected(day)"
 						:aria-dropeffect="enableDragDrop && state.currentDragItem ? 'move' : enableDateSelection && state.dateSelectionOrigin ? 'execute' : 'none'"
-						@click="onClickDay(day, $event)"
-						@dragstart="onDragDateStart(day, $event)"
-						@drop.prevent="onDrop(day, $event)"
-						@dragover.prevent="onDragOver(day, $event)"
-						@dragenter.prevent="onDragEnter(day, $event)"
-						@dragleave.prevent="onDragLeave(day, $event)"
-					>
-						<div class="cv-day-number">
-							<span v-if="fomName(day)" class="cv-fom-name">{{ fomName(day) }}</span>
-							{{ day.getDate() }}
+						@click="onClickDay(day, $event)" @dragstart="onDragDateStart(day, $event)" @drop.prevent="onDrop(day, $event)"
+						@dragover.prevent="onDragOver(day, $event)" @dragenter.prevent="onDragEnter(day, $event)"
+						@dragleave.prevent="onDragLeave(day, $event)">
+						<div class="cv-day-wrapper">
+							<div class="cv-day-number" @mouseenter="onMouseEnterDay(day, $event)"
+								@mouseleave="onMouseLeaveDay(day, $event)">
+								<span v-if="fomName(day)" class="cv-fom-name">{{ fomName(day) }}</span>
+								{{ day.getDate() }}
+							</div>
+							<div v-if="dayHasHolidays(day, currentHoliday)" class="holiday-tooltip-wrapper">
+								<div class="holiday-tooltip">{{ currentHoliday?.tooltip }}</div>
+							</div>
 						</div>
 						<slot :day="day" name="day-content" />
 					</div>
 					<template v-if="props.enableHtmlTitles" v-for="i in getWeekItems(weekStart)">
 						<slot :value="i" :weekStartDate="weekStart" :top="getItemTop(i)" name="item">
-							<div
-								:key="i.id"
-								:draggable="enableDragDrop"
-								:aria-grabbed="enableDragDrop ? i == state.currentDragItem : undefined"
-								:class="i.classes"
-								:title="i.tooltip || i.title"
-								:style="`top:${getItemTop(i)};${i.originalItem.style}`"
-								class="cv-item"
-								@dragstart="onDragItemStart(i, $event)"
-								@mouseenter="onMouseEnterItem(i, $event)"
-								@mouseleave="onMouseLeaveItem(i, $event)"
-								@click.stop="onClickItem(i, $event)"
-								v-html="getItemTitle(i)"
-							/>
+							<div :key="i.id" :draggable="enableDragDrop"
+								:aria-grabbed="enableDragDrop ? i == state.currentDragItem : undefined" :class="i.classes"
+								:title="i.tooltip || i.title" :style="`top:${getItemTop(i)};${i.originalItem.style}`" class="cv-item"
+								@dragstart="onDragItemStart(i, $event)" @mouseenter="onMouseEnterItem(i, $event)"
+								@mouseleave="onMouseLeaveItem(i, $event)" @click.stop="onClickItem(i, $event)" v-html="getItemTitle(i)" />
 						</slot>
 					</template>
 					<template v-else v-for="i in getWeekItems(weekStart)">
 						<slot :value="i" :weekStartDate="weekStart" :top="getItemTop(i)" name="item">
-							<div
-								:key="i.id"
-								:draggable="enableDragDrop"
-								:aria-grabbed="enableDragDrop ? i == state.currentDragItem : undefined"
-								:class="i.classes"
-								:title="i.tooltip || i.title"
-								:style="`top:${getItemTop(i)};${i.originalItem.style}`"
-								class="cv-item"
-								@dragstart="onDragItemStart(i, $event)"
-								@mouseenter="onMouseEnterItem(i, $event)"
-								@mouseleave="onMouseLeaveItem(i, $event)"
-								@click.stop="onClickItem(i, $event)"
-							>
+							<div :key="i.id" :draggable="enableDragDrop"
+								:aria-grabbed="enableDragDrop ? i == state.currentDragItem : undefined" :class="i.classes"
+								:title="i.tooltip || i.title" :style="`top:${getItemTop(i)};${i.originalItem.style}`" class="cv-item"
+								@dragstart="onDragItemStart(i, $event)" @mouseenter="onMouseEnterItem(i, $event)"
+								@mouseleave="onMouseLeaveItem(i, $event)" @click.stop="onClickItem(i, $event)">
 								{{ getItemTitle(i) }}
 							</div>
 							div>
@@ -127,7 +102,7 @@
 import CalendarMath from "./CalendarMath"
 import CalendarViewState from "./CalendarViewState"
 import { computed, reactive, watch } from "vue"
-import { ICalendarItem, INormalizedCalendarItem, DateTimeFormatOption } from "./ICalendarItem"
+import { ICalendarItem, INormalizedCalendarItem, DateTimeFormatOption, ICalendarHoliday } from "./ICalendarItem"
 import { IHeaderProps } from "./IHeaderProps"
 
 const props = withDefaults(
@@ -149,6 +124,7 @@ const props = withDefaults(
 		enableDragDrop?: boolean
 		startingDayOfWeek?: number
 		items?: ICalendarItem[]
+		holidays?: ICalendarHoliday[]
 		dateClasses?: Record<string, string[]>
 		itemTop?: string
 		itemContentHeight?: string
@@ -157,6 +133,7 @@ const props = withDefaults(
 		currentPeriodLabel?: string
 		currentPeriodLabelIcons?: string
 		doEmitItemMouseEvents?: boolean
+		doEmitHolidayMouseEvents?: boolean
 		enableHtmlTitles?: boolean
 		monthNameOn1st?: boolean
 	}>(),
@@ -178,6 +155,7 @@ const props = withDefaults(
 		enableDragDrop: false,
 		startingDayOfWeek: 0,
 		items: () => [],
+		holidays: () => [],
 		dateClasses: () => ({}),
 		itemTop: "1.4em",
 		itemContentHeight: "1.4em",
@@ -186,6 +164,7 @@ const props = withDefaults(
 		currentPeriodLabel: "",
 		currentPeriodLabelIcons: "⇤-⇥",
 		doEmitItemMouseEvents: false,
+		doEmitHolidayMouseEvents: false,
 		enableHtmlTitles: true,
 		monthNameOn1st: true,
 	}
@@ -198,6 +177,8 @@ const emit = defineEmits<{
 	(e: "click-item", item: INormalizedCalendarItem, windowEvent: Event): void
 	(e: "item-mouseenter", item: INormalizedCalendarItem, windowEvent: Event): void
 	(e: "item-mouseleave", item: INormalizedCalendarItem, windowEvent: Event): void
+	(e: "holiday-mouseenter", day: Date, windowEvent: Event): void
+	(e: "holiday-mouseleave", day: Date, windowEvent: Event): void
 	(e: "drag-start", item: INormalizedCalendarItem, windowEvent: Event): void
 	(e: "drag-over-date", currentDragItem: INormalizedCalendarItem, day: Date, windowEvent: Event): void
 	(e: "drag-enter-date", currentDragItem: INormalizedCalendarItem, day: Date, windowEvent: Event): void
@@ -258,6 +239,13 @@ const fixedItems = computed((): INormalizedCalendarItem[] => {
 	if (!props.items) return []
 	return props.items.map((item) => CalendarMath.normalizeItem(item, item.id === state.currentHoveredItemId))
 })
+
+const currentHoliday = computed(() => {
+	if (!props.holidays) return {};
+	return props.holidays.find(holiday => holiday.id === state.currentHoveredHolidayId)
+});
+
+
 
 // Period that today's date sits within
 const currentPeriodStart = computed((): Date => CalendarMath.beginningOfPeriod(CalendarMath.today(), props.displayPeriodUom, props.startingDayOfWeek))
@@ -371,6 +359,21 @@ const onMouseLeaveItem = (calendarItem: INormalizedCalendarItem, windowEvent: Ev
 	}
 }
 
+const onMouseEnterDay = (day: Date, windowEvent: Event): void => {
+	const holidayId = props.holidays.find(holiday => CalendarMath.isSameDate(day, new Date(holiday.holidayDate)))?.id;
+	state.currentHoveredHolidayId = holidayId ?? "";
+	if (props.doEmitHolidayMouseEvents) {
+		emit("holiday-mouseenter", day, windowEvent)
+	}
+}
+
+const onMouseLeaveDay = (day: Date, windowEvent: Event): void => {
+	state.currentHoveredHolidayId = ""
+	if (props.doEmitHolidayMouseEvents) {
+		emit("holiday-mouseleave", day, windowEvent)
+	}
+}
+
 // ******************************
 // Dragging across days (selection)
 // ******************************
@@ -475,6 +478,11 @@ const findAndSortItemsInDateRange = (startDate: Date, endDate: Date): INormalize
 	fixedItems.value.filter((item) => item.endDate >= startDate && CalendarMath.dateOnly(item.startDate) <= endDate, this).sort(itemComparer)
 
 const dayHasItems = (day: Date): boolean => !!fixedItems.value.find((d) => d.endDate >= day && CalendarMath.dateOnly(d.startDate) <= day)
+
+const dayHasHolidays = (day: Date, holiday: ICalendarHoliday): boolean => {
+	if (!holiday?.holidayDate) return false;
+	return CalendarMath.isSameDate(day, new Date(holiday.holidayDate));
+};
 
 const dayIsSelected = (day: Date): boolean => {
 	if (!props.selectionStart || !props.selectionEnd) return false
@@ -660,8 +668,10 @@ header are in the CalendarViewHeader component.
 	flex-grow: 1;
 	flex-shrink: 0;
 	flex-basis: 0;
-	position: relative; /* Fallback for IE11, which doesn't support sticky */
-	position: sticky; /* When week's items are scrolled, keep the day content fixed */
+	position: relative;
+	/* Fallback for IE11, which doesn't support sticky */
+	/* position: sticky; */
+	/* When week's items are scrolled, keep the day content fixed */
 	top: 0;
 	border-width: 1px 1px 0 0;
 
@@ -669,10 +679,35 @@ header are in the CalendarViewHeader component.
 	direction: initial;
 }
 
+.cv-day-wrapper {
+	position: absolute;
+	left: 50%;
+}
+
 .cv-day-number {
 	height: auto;
 	width: 100%;
 	align-self: flex-start;
+	position: fixed;
+	transform: translate(-50%, 0%);
+	z-index: 10;
+}
+
+
+.holiday-tooltip-wrapper {
+	position: absolute;
+	left: 50%;
+	top: 30px;
+}
+
+.holiday-tooltip {
+	width: 100px;
+	text-align: center;
+	padding: 5px;
+	background-color: #00cc00;
+	position: fixed;
+	transform: translate(-50%, 0%);
+	z-index: 10;
 }
 
 .d01 .cv-day-number:has(.cv-fom-name) {
@@ -681,15 +716,17 @@ header are in the CalendarViewHeader component.
 
 /* Default styling for holiday hover descriptions */
 
-.cv-day-number:hover::after {
+.holiday:hover::after {
 	position: absolute;
 	top: 1rem;
 	background-color: var(--cal-holiday-bg, #f7f7f7);
+	color: black;
 	border: var(--cal-holiday-border, 1px solid #f0f0f0);
 	box-shadow: 0.1rem 0.1rem 0.2rem var(--cal-holiday-shadow, rgba(0, 0, 0, 0.25));
 	padding: 0.2rem;
 	margin: 0.5rem;
 	line-height: 1.2;
+	z-index: 100;
 }
 
 /*
@@ -828,7 +865,9 @@ _:-ms-lang(x),
 /* Hide scrollbars for the grid and the week */
 .cv-weeks::-webkit-scrollbar,
 .cv-weekdays::-webkit-scrollbar {
-	width: 0; /* remove scrollbar space */
-	background: transparent; /* optional: just make scrollbar invisible */
+	width: 0;
+	/* remove scrollbar space */
+	background: transparent;
+	/* optional: just make scrollbar invisible */
 }
 </style>

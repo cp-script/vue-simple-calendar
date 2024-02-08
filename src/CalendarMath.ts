@@ -1,4 +1,4 @@
-import type { ICalendarItem, INormalizedCalendarItem, DateTimeFormatOption } from "./ICalendarItem"
+import type { ICalendarItem, INormalizedCalendarItem, DateTimeFormatOption, ICalendarHoliday, INormalizedCalendarHoliday } from "./ICalendarItem"
 
 // ***********************************************************
 // This includes methods that are useful in displaying a
@@ -185,6 +185,21 @@ const getDefaultBrowserLocale = (): string => {
 // ******************************
 // Calendar Items
 // ******************************
+const normalizeHoliday = (holiday: ICalendarHoliday, isHovered: boolean): INormalizedCalendarHoliday => {
+	// Starting in version 6, classes must be an array of string
+	// Classes may be a string, an array, or null. Normalize to an array
+	const holidayClasses = holiday.classes ? [...holiday.classes] : []
+	// Provides support for pseudo-hover of entire holiday when one part of it is hovered
+	if (isHovered) holidayClasses.push("isHovered")
+	return {
+		originalHoliday: holiday,
+		holidayDate: toLocalDate(holiday.holidayDate),
+		classes: holidayClasses,
+		id: holiday.id,
+		tooltip: holiday.tooltip
+	}
+}
+
 const normalizeItem = (item: ICalendarItem, isHovered: boolean): INormalizedCalendarItem => {
 	// Starting in version 6, classes must be an array of string
 	// Classes may be a string, an array, or null. Normalize to an array
@@ -238,6 +253,7 @@ export default {
 	isSameDateTime,
 	isSameMonth,
 	languageCode,
+	normalizeHoliday,
 	normalizeItem,
 	paddedDay,
 	paddedMonth,
