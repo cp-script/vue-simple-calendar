@@ -12,6 +12,17 @@ interface ICalendarItem {
 	style?: string
 }
 
+interface ICalendarHoliday {
+	// Required
+	id: string
+	holidayDate: string | Date
+
+	// Optional
+	tooltip?: string
+	classes?: string[] | null
+	style?: string
+}
+
 interface INormalizedCalendarItem extends ICalendarItem {
 	endDate: Date
 	originalItem: ICalendarItem
@@ -19,6 +30,11 @@ interface INormalizedCalendarItem extends ICalendarItem {
 	itemRow?: number
 }
 
+interface INormalizedCalendarHoliday extends ICalendarHoliday {
+	originalHoliday: ICalendarHoliday
+	classes: string[]
+}
+
 type DateTimeFormatOption = "long" | "short" | "narrow" | undefined
 
-export { ICalendarItem, INormalizedCalendarItem, DateTimeFormatOption }
+export { ICalendarItem, ICalendarHoliday, INormalizedCalendarItem, INormalizedCalendarHoliday, DateTimeFormatOption }
