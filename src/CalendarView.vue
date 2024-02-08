@@ -44,6 +44,7 @@
 							`instance${CalendarMath.instanceOfMonth(day)}`,
 							{
 								today: CalendarMath.isSameDate(day, CalendarMath.today()),
+								holiday: dayHasHolidays(day),
 								outsideOfMonth: !CalendarMath.isSameMonth(day, defaultedShowDate),
 								past: CalendarMath.isInPast(day),
 								future: CalendarMath.isInFuture(day),
@@ -66,7 +67,7 @@
 								<span v-if="fomName(day)" class="cv-fom-name">{{ fomName(day) }}</span>
 								{{ day.getDate() }}
 							</div>
-							<div v-if="dayHasHolidays(day, currentHoliday)" class="holiday-tooltip-wrapper">
+							<div v-if="holidayHovered(day, currentHoliday)" class="holiday-tooltip-wrapper">
 								<div class="holiday-tooltip">{{ currentHoliday?.tooltip }}</div>
 							</div>
 						</div>
@@ -240,9 +241,9 @@ const fixedItems = computed((): INormalizedCalendarItem[] => {
 	return props.items.map((item) => CalendarMath.normalizeItem(item, item.id === state.currentHoveredItemId))
 })
 
-const currentHoliday = computed(() => {
+const currentHoliday = computed((): ICalendarHoliday => {
 	if (!props.holidays) return {};
-	return props.holidays.find(holiday => holiday.id === state.currentHoveredHolidayId)
+	return props.holidays.find(holiday => holiday.id === state.currentHoveredHolidayId) ?? {}
 });
 
 
@@ -360,7 +361,7 @@ const onMouseLeaveItem = (calendarItem: INormalizedCalendarItem, windowEvent: Ev
 }
 
 const onMouseEnterDay = (day: Date, windowEvent: Event): void => {
-	const holidayId = props.holidays.find(holiday => CalendarMath.isSameDate(day, new Date(holiday.holidayDate)))?.id;
+	const holidayId = props.holidays.find((holiday: ICalendarHoliday) => CalendarMath.isSameDate(day, new Date(holiday.holidayDate ?? "")))?.id;
 	state.currentHoveredHolidayId = holidayId ?? "";
 	if (props.doEmitHolidayMouseEvents) {
 		emit("holiday-mouseenter", day, windowEvent)
@@ -479,9 +480,14 @@ const findAndSortItemsInDateRange = (startDate: Date, endDate: Date): INormalize
 
 const dayHasItems = (day: Date): boolean => !!fixedItems.value.find((d) => d.endDate >= day && CalendarMath.dateOnly(d.startDate) <= day)
 
-const dayHasHolidays = (day: Date, holiday: ICalendarHoliday): boolean => {
+const holidayHovered = (day: Date, holiday: ICalendarHoliday): boolean => {
 	if (!holiday?.holidayDate) return false;
 	return CalendarMath.isSameDate(day, new Date(holiday.holidayDate));
+};
+
+const dayHasHolidays = (day: Date): boolean => {
+	if (!props.holidays) return false;
+	return !!props.holidays.find(holiday => CalendarMath.isSameDate(day, new Date(holiday.holidayDate ?? "")));
 };
 
 const dayIsSelected = (day: Date): boolean => {

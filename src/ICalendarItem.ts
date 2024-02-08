@@ -14,8 +14,8 @@ interface ICalendarItem {
 
 interface ICalendarHoliday {
 	// Required
-	id: string
-	holidayDate: string | Date
+	id?: string
+	holidayDate?: string | Date
 
 	// Optional
 	tooltip?: string
